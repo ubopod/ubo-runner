@@ -21,7 +21,9 @@ set -o xtrace
 curl -sSL https://install.python-poetry.org | python3 -
 cd
 mkdir actions-runner && cd actions-runner
-curl -o actions-runner-linux-arm64-2.317.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.317.0/actions-runner-linux-arm64-2.317.0.tar.gz
+if [ ! -f actions-runner-linux-arm64-2.317.0.tar.gz ]; then
+  curl -o actions-runner-linux-arm64-2.317.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.317.0/actions-runner-linux-arm64-2.317.0.tar.gz
+fi
 echo '7e8e2095d2c30bbaa3d2ef03505622b883d9cb985add6596dbe2f234ece308f3  actions-runner-linux-arm64-2.317.0.tar.gz' | shasum -a 256 -c
 tar xzf ./actions-runner-linux-arm64-2.317.0.tar.gz
 ./config.sh --url https://github.com/ubopod/ubo_app --token $GITHUB_TOKEN --unattended --labels ubo-pod
