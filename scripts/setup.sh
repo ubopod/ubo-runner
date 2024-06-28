@@ -1,5 +1,10 @@
 #!/usr/bin/env sh
 
+set -o errexit
+set -o pipefail
+set -o nounset
+set -o xtrace
+
 # Check $GITHUB_TOKEN is set
 if [ -z "$GITHUB_TOKEN" ]; then
   echo "\$GITHUB_TOKEN is not set"
@@ -7,7 +12,12 @@ if [ -z "$GITHUB_TOKEN" ]; then
 fi
 
 ssh ubo-development-pod sudo apt install tmux
-ssh ubo-development-pod "cat <<'EOF' > /tmp/run_script.sh
+ssh -t ubo-development-pod "cat <<'EOF' > /tmp/run_script.sh
+set -o errexit
+set -o pipefail
+set -o nounset
+set -o xtrace
+
 curl -sSL https://install.python-poetry.org | python3 -
 cd
 mkdir actions-runner && cd actions-runner
