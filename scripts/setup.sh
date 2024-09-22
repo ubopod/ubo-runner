@@ -11,6 +11,8 @@ if [ -z "$GITHUB_TOKEN" ]; then
   exit 1
 fi
 
+LATEST_ASSET_URL=$(curl https://api.github.com/repos/actions/runner/releases/latest | jq -r '.assets[] | select(.name | contains("linux-arm64")) | .browser_download_url')
+
 ssh ubo-development-pod sudo apt install tmux
 ssh -t ubo-development-pod "cat <<'EOF' > /tmp/run_script.sh
 set -o errexit
@@ -18,14 +20,17 @@ set -o pipefail
 set -o nounset
 set -o xtrace
 
-curl -sSL https://install.python-poetry.org | python3 -
-cd
-mkdir actions-runner && cd actions-runner
-if [ ! -f actions-runner-linux-arm64-2.317.0.tar.gz ]; then
-  curl -o actions-runner-linux-arm64-2.317.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.317.0/actions-runner-linux-arm64-2.317.0.tar.gz
+if [ ! -f ~/.local/bin/poetry ]; then
+  curl -sSL https://install.python-poetry.org | python3 -
 fi
-echo '7e8e2095d2c30bbaa3d2ef03505622b883d9cb985add6596dbe2f234ece308f3  actions-runner-linux-arm64-2.317.0.tar.gz' | shasum -a 256 -c
-tar xzf ./actions-runner-linux-arm64-2.317.0.tar.gz
+cd
+mkdir -p actions-runner && cd actions-runner
+if [ ! -f ./config.sh ]; then
+  if [ ! -f actions-runner-linux-arm64-latest.tar.gz ]; then
+    curl -o actions-runner-linux-arm64-latest.tar.gz -L "$LATEST_ASSET_URL"
+  fi
+  tar xzf ./actions-runner-linux-arm64-latest.tar.gz
+fi
 ./config.sh --url https://github.com/ubopod/ubo_app --token $GITHUB_TOKEN --unattended --labels ubo-pod
 EOF
 sudo -u ubo bash /tmp/run_script.sh
