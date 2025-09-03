@@ -5,6 +5,16 @@ set -o pipefail
 set -o nounset
 set -o xtrace
 
+# Check arguments
+if [ $# -lt 2 ]; then
+  echo "Usage: $0 <ssh-address> <runner-label>"
+  echo "Example: $0 pi@ubo-8u.local ubo-pod-pi5-2"
+  exit 1
+fi
+
+SSH_ADDRESS=$1
+RUNNER_LABEL=$2
+
 # Check $GITHUB_TOKEN is set
 if [ -z "$GITHUB_TOKEN" ]; then
   echo "\$GITHUB_TOKEN is not set"
@@ -17,7 +27,7 @@ if [ -z "$LATEST_ASSET_URL" ] || [ "$LATEST_ASSET_URL" = "null" ]; then
   exit 1
 fi
 
-ssh -t "pi@$1" "cat <<EOF > /tmp/script.sh
+ssh -t "$SSH_ADDRESS" "cat <<EOF > /tmp/script.sh
 #!/usr/bin/env bash
 set -o errexit
 set -o pipefail
@@ -33,7 +43,7 @@ if [ ! -f ./config.sh ]; then
   fi
   tar xzf ./actions-runner-linux-arm64-latest.tar.gz
 fi
-./config.sh --url https://github.com/ubopod/ubo_app --token $GITHUB_TOKEN --unattended --labels ubo-pod
+./config.sh --url https://github.com/ubopod/ubo_app --token $GITHUB_TOKEN --unattended --labels $RUNNER_LABEL
 
 # Create systemd user service directory
 mkdir -p "~/.config/systemd/user"
